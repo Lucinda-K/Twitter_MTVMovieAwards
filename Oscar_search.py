@@ -3,11 +3,16 @@
 
 import tweepy	# for streaming tweets
 import codecs	# for outputting ascii to .txt file properly
+import json	# for parsing json
 
-API_key = "wcskLByjo4Vic3ST5VjZtdert"
-API_secret = "zYHNzEbnN5NFurALVxmS1NbbrXay54SQ03ciWdxpEEr9OB1Yqs"
-access_token = "3247974236-PCsBe4ERedXGlxoM6m7nEMwY6MzTYgbzt56Ptvw"
-access_token_secret = "pEL43CsaYPxVCORoxeIzEStN8oe2dXdSlxO2OehqPWWZ2"
+# Open config file, which contains API info 
+with open("conf/settings.json") as json_file:
+	info = json.load(json_file)
+# load info from config dictionary
+API_key = info["db"]["api_key"]
+API_secret = info["db"]["api_secret"]
+access_token = info["db"]["access_token"]
+access_token_secret = info["db"]["access_token_secret"]
 
 auth = tweepy.OAuthHandler(API_key, API_secret)
 auth.set_access_token(access_token, access_token_secret)
