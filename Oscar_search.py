@@ -9,17 +9,17 @@ import json	# for parsing json
 with open("conf/settings.json") as json_file:
 	info = json.load(json_file)
 # load info from config dictionary
-API_key = info["db"]["api_key"]
-API_secret = info["db"]["api_secret"]
-access_token = info["db"]["access_token"]
-access_token_secret = info["db"]["access_token_secret"]
+API_key = info["lk"]["api_key"]
+API_secret = info["lk"]["api_secret"]
+access_token = info["lk"]["access_token"]
+access_token_secret = info["lk"]["access_token_secret"]
 
 auth = tweepy.OAuthHandler(API_key, API_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
 
-file = codecs.open("results_BrieLarson", "w", "utf-8")
+file = codecs.open("results_BrieLarson.txt", "w", "utf-8")
 #file = codecs.open("output3.txt", "w", "utf-8")
 
 tweet_total = 0
