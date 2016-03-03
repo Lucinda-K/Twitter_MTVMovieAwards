@@ -6,7 +6,7 @@ import codecs	# for outputting ascii to .txt file properly
 import json	# for parsing json
 import sys,os
 
-class tweepy_api:
+class Tweepy_api:
 
 	def __init__(self):
 
@@ -14,7 +14,7 @@ class tweepy_api:
 		self.api_secret = ""
 		self.access_token = ""
 		self.access_token_secret = ""
-		self.api
+		self.api = None
 
 	def get_credentials(self):
 
@@ -35,11 +35,7 @@ class tweepy_api:
 		self.api = tweepy.API(auth)
 
 
-def parse_args(args):
 
-
-	output_file = sys.arg[1]
-	search_term = sys.arg[2]
 '''
 # Open config file, which contains API info 
 with open("conf/settings.json") as json_file:
@@ -55,100 +51,70 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
 '''
-file = codecs.open("results_BrieLarson3.txt", "w", "utf-8")
-#file = codecs.open("output3.txt", "w", "utf-8")
 
+#file = codecs.open("output3.txt", "w", "utf-8")
+'''
 tweet_total = 0
 first_tweet_time = ""
 last_tweet_time = ""
 queried_tweets = []
 
 keyword = "\"Brie Larson\""
-
-for tweet in tweepy.Cursor(api.search,q=keyword, since="2016-02-25",until="2016-02-28",count=100,lang='en').items():
-	queried_tweets.append(tweet)
-	file.write(str(tweet.created_at))
-	file.write('-->')
-	file.write(tweet.text)
-	file.write('\n')
 '''
-queried_tweets = api.search(q = keyword, lang ='en')
+
+class Query:
+
+	def __init__(self,api):
+		self.queried_tweets = []
+
+	def search_tweets(self,keywords,since_date,until_date):
+
+		print "Searching tweets for:"
+		print keywords
+		print since_date
+		print until_date
+		# create keywords string
+		keyword_str = "\"" + str(keywords) + "\""
+		for tweet in tweepy.Cursor(api.search,q=keyword_str, since=since_date, until=until_date, count=100, lang='en').items(100):
+			self.queried_tweets.append(tweet)
+		print "Done searching"
+
+
+	def output_to_file(self,outfile):
+		print "Outputting to file..."
+		for tweet in self.queried_tweets:
+			outfile.write(str(tweet))
 '''
 tweet_total = len(queried_tweets)
-'''
-for tweet in queried_tweets:
-	file.write(tweet)
-'''
+
+#for tweet in queried_tweets:
+#	file.write(tweet)
+
 file.write("\n\n\nSUMMARY OF TWEETS\n\n\n")
 file.write("Number of tweets: %d\n\n" % tweet_total)
-
+'''
 
 
 
 if __name__=="__main__":
 
-	parse_args(sys.argv)
+	if len(sys.argv) != 3:
+		sys.exit('Usage: python program.py out_file search_term')
 
-	myAPI = tweepy_api()
-	myAPI.setup_oath()
+	output_file = str(sys.argv[1])
+	search_term = str(sys.argv[2])
+
+	file = codecs.open(output_file, "w", "utf-8")
+
+	print "Creating api object..."
+	myAPI = Tweepy_api()
+	myAPI.setup_oauth()
 	api = myAPI.api
 
+	print "Creating Query object..."
+	myQuery = Query(api)
+	myQuery.search_tweets(search_term,'2016-02-24','2016-02-29')
+	myQuery.output_to_file(file)
 
+	sys.exit()
 
-
-
-
-
-
-
-
-'''
-file.write("First tweet",)
-file.write(queried_tweets[0].created_at)
-file.write("Last tweet",)
-file.write(queried_tweets[tweet_total-1].created_at)
-'''
-'''
-for tweet in queried_tweets:
-	file.write(tweet.text)
-	file.write("\n")
-'''
-'''
-# This uses a streaming API, as opposed to a search API, since the purpose is to collect real-time tweets.
-
-# Create StreamListener class
-
-class MyStreamListener(tweepy.StreamListener):
-
-	def __init__(self, listener, api = None):
-		self.listener = listener	# Name of stream
-		self.api = tweepy.API(auth)
-		self.tweet_count = 1		# Keep count of tweets
-		self.max_tweets = 50		# Stop after 50 tweets
-
-	def on_status(self, status):
-		# print real-time tweets
-		file.write("Stream: %s, Tweet: %d %s\n" % (self.listener, self.tweet_count, status.text))
-		self.tweet_count += 1
-
-		# close stream at max
-		if self.tweet_count > self.max_tweets:
-			return False
-
-	def on_error(self, status_code):
-	# deals with rate limits, disconnects stream
-		if status_code == 420:
-			file.write("Rate limit exceeded")
-			return False
-
-# Instantiate listener objects - open streams
-myWordStream = tweepy.Stream(auth, listener=MyStreamListener('WeatherStream'))
-myLocationStream = tweepy.Stream(auth, listener=MyStreamListener('LocationStream'))
-
-file.write("Stream 1: Keywords \"weather\" OR \"indiana\"\n")
-# Stream 1, keywords = "weather" and "indiana"
-myWordStream.filter(track=['indiana','weather'], async=True)
-file.write("\nStream 2: Location within South Bend\n")
-# Stream 2, location = South Bend, IN (approximate)
-myLocationStream.filter(locations=[-86.33,41.63,-86.20,41.74], async=True)
-'''
