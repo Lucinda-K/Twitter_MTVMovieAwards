@@ -35,33 +35,6 @@ class Tweepy_api:
 		self.api = tweepy.API(auth)
 
 
-
-'''
-# Open config file, which contains API info 
-with open("conf/settings.json") as json_file:
-	info = json.load(json_file)
-# load info from config dictionary
-API_key = info["lk"]["api_key"]
-API_secret = info["lk"]["api_secret"]
-access_token = info["lk"]["access_token"]
-access_token_secret = info["lk"]["access_token_secret"]
-
-auth = tweepy.OAuthHandler(API_key, API_secret)
-auth.set_access_token(access_token, access_token_secret)
-
-api = tweepy.API(auth)
-'''
-
-#file = codecs.open("output3.txt", "w", "utf-8")
-'''
-tweet_total = 0
-first_tweet_time = ""
-last_tweet_time = ""
-queried_tweets = []
-
-keyword = "\"Brie Larson\""
-'''
-
 class Query:
 
 	def __init__(self,api):
@@ -69,32 +42,21 @@ class Query:
 
 	def search_tweets(self,keywords,since_date,until_date):
 
-		print "Searching tweets for:"
-		print keywords
-		print since_date
-		print until_date
 		# create keywords string
 		keyword_str = "\"" + str(keywords) + "\""
 		for tweet in tweepy.Cursor(api.search,q=keyword_str, since=since_date, until=until_date, count=100, lang='en').items(100):
+
 			self.queried_tweets.append(tweet)
-		print "Done searching"
 
 
 	def output_to_file(self,outfile):
 		print "Outputting to file..."
 		for tweet in self.queried_tweets:
-			outfile.write(str(tweet))
-'''
-tweet_total = len(queried_tweets)
 
-#for tweet in queried_tweets:
-#	file.write(tweet)
-
-file.write("\n\n\nSUMMARY OF TWEETS\n\n\n")
-file.write("Number of tweets: %d\n\n" % tweet_total)
-'''
-
-
+			outfile.write(str(tweet.created_at))
+			outfile.write("  |  ")
+			outfile.write(tweet.text)
+			outfile.write("  |  ")
 
 if __name__=="__main__":
 

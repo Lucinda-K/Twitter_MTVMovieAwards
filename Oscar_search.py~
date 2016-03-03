@@ -3,84 +3,124 @@
 
 import tweepy	# for streaming tweets
 import codecs	# for outputting ascii to .txt file properly
+import json	# for parsing json
+import sys,os
 
-API_key = "wcskLByjo4Vic3ST5VjZtdert"
-API_secret = "zYHNzEbnN5NFurALVxmS1NbbrXay54SQ03ciWdxpEEr9OB1Yqs"
-access_token = "3247974236-PCsBe4ERedXGlxoM6m7nEMwY6MzTYgbzt56Ptvw"
-access_token_secret = "pEL43CsaYPxVCORoxeIzEStN8oe2dXdSlxO2OehqPWWZ2"
+class Tweepy_api:
+
+	def __init__(self):
+
+		self.api_key = ""
+		self.api_secret = ""
+		self.access_token = ""
+		self.access_token_secret = ""
+		self.api = None
+
+	def get_credentials(self):
+
+		# Open config file, which contains API info 
+		with open("conf/settings.json") as json_file:
+			info = json.load(json_file)
+		# load info from config dictionary
+		self.api_key = info["lk"]["api_key"]
+		self.api_secret = info["lk"]["api_secret"]
+		self.access_token = info["lk"]["access_token"]
+		self.access_token_secret = info["lk"]["access_token_secret"]
+	
+	def setup_oauth(self):
+		self.get_credentials()
+		auth = tweepy.OAuthHandler(self.api_key, self.api_secret)
+		auth.set_access_token(self.access_token, self.access_token_secret)
+
+		self.api = tweepy.API(auth)
+
+
+
+'''
+# Open config file, which contains API info 
+with open("conf/settings.json") as json_file:
+	info = json.load(json_file)
+# load info from config dictionary
+API_key = info["lk"]["api_key"]
+API_secret = info["lk"]["api_secret"]
+access_token = info["lk"]["access_token"]
+access_token_secret = info["lk"]["access_token_secret"]
 
 auth = tweepy.OAuthHandler(API_key, API_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
+'''
 
-file = codecs.open("results_BrieLarson", "w", "utf-8")
 #file = codecs.open("output3.txt", "w", "utf-8")
-
+'''
 tweet_total = 0
 first_tweet_time = ""
 last_tweet_time = ""
+queried_tweets = []
+
+keyword = "\"Brie Larson\""
+'''
+
+class Query:
+
+	def __init__(self,api):
+		self.queried_tweets = []
+
+	def search_tweets(self,keywords,since_date,until_date):
+
+		print "Searching tweets for:"
+		print keywords
+		print since_date
+		print until_date
+		# create keywords string
+		keyword_str = "\"" + str(keywords) + "\""
+		for tweet in tweepy.Cursor(api.search,q=keyword_str, since=since_date, until=until_date, count=100, lang='en').items(100):
+# 
+#			status = tweet[0]
+#			json_str = json.dumps(tweet._json)
+			self.queried_tweets.append(tweet)
+#			self.queried_tweets.append(json_str)
+		print "Done searching"
 
 
-keyword = "Brie Larson"
-
-
-
-queried_tweets = api.search(q = keyword, count = 100)
+	def output_to_file(self,outfile):
+		print "Outputting to file..."
+		for tweet in self.queried_tweets:
+			#print tweet
+			print tweet.text
+			outfile.write(str(tweet.created_at))
+'''
 tweet_total = len(queried_tweets)
 
-for tweet in queried_tweets:
-	file.write(tweet)
+#for tweet in queried_tweets:
+#	file.write(tweet)
 
 file.write("\n\n\nSUMMARY OF TWEETS\n\n\n")
-file.write("Number of tweets: %d\n" % tweet_total)
-'''
-file.write("First tweet",)
-file.write(queried_tweets[0].created_at)
-file.write("Last tweet",)
-file.write(queried_tweets[tweet_total-1].created_at)
+file.write("Number of tweets: %d\n\n" % tweet_total)
 '''
 
-for tweet in queried_tweets:
-	file.write(tweet.text)
-	file.write("\n")
 
-'''
-# This uses a streaming API, as opposed to a search API, since the purpose is to collect real-time tweets.
 
-# Create StreamListener class
+if __name__=="__main__":
 
-class MyStreamListener(tweepy.StreamListener):
+	if len(sys.argv) != 3:
+		sys.exit('Usage: python program.py out_file search_term')
 
-	def __init__(self, listener, api = None):
-		self.listener = listener	# Name of stream
-		self.api = tweepy.API(auth)
-		self.tweet_count = 1		# Keep count of tweets
-		self.max_tweets = 50		# Stop after 50 tweets
+	output_file = str(sys.argv[1])
+	search_term = str(sys.argv[2])
 
-	def on_status(self, status):
-		# print real-time tweets
-		file.write("Stream: %s, Tweet: %d %s\n" % (self.listener, self.tweet_count, status.text))
-		self.tweet_count += 1
+	file = codecs.open(output_file, "w", "utf-8")
 
-		# close stream at max
-		if self.tweet_count > self.max_tweets:
-			return False
+	print "Creating api object..."
+	myAPI = Tweepy_api()
+	myAPI.setup_oauth()
+	api = myAPI.api
 
-	def on_error(self, status_code):
-	# deals with rate limits, disconnects stream
-		if status_code == 420:
-			file.write("Rate limit exceeded")
-			return False
+	print "Creating Query object..."
+	myQuery = Query(api)
+	myQuery.search_tweets(search_term,'2016-02-24','2016-02-29')
+	myQuery.output_to_file(file)
 
-# Instantiate listener objects - open streams
-myWordStream = tweepy.Stream(auth, listener=MyStreamListener('WeatherStream'))
-myLocationStream = tweepy.Stream(auth, listener=MyStreamListener('LocationStream'))
+	sys.exit()
 
-file.write("Stream 1: Keywords \"weather\" OR \"indiana\"\n")
-# Stream 1, keywords = "weather" and "indiana"
-myWordStream.filter(track=['indiana','weather'], async=True)
-file.write("\nStream 2: Location within South Bend\n")
-# Stream 2, location = South Bend, IN (approximate)
-myLocationStream.filter(locations=[-86.33,41.63,-86.20,41.74], async=True)
-'''
