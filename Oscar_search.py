@@ -4,7 +4,43 @@
 import tweepy	# for streaming tweets
 import codecs	# for outputting ascii to .txt file properly
 import json	# for parsing json
+import sys,os
 
+class tweepy_api:
+
+	def __init__(self):
+
+		self.api_key = ""
+		self.api_secret = ""
+		self.access_token = ""
+		self.access_token_secret = ""
+		self.api
+
+	def get_credentials(self):
+
+		# Open config file, which contains API info 
+		with open("conf/settings.json") as json_file:
+			info = json.load(json_file)
+		# load info from config dictionary
+		self.api_key = info["lk"]["api_key"]
+		self.api_secret = info["lk"]["api_secret"]
+		self.access_token = info["lk"]["access_token"]
+		self.access_token_secret = info["lk"]["access_token_secret"]
+	
+	def setup_oauth(self):
+		self.get_credentials()
+		auth = tweepy.OAuthHandler(self.api_key, self.api_secret)
+		auth.set_access_token(self.access_token, self.access_token_secret)
+
+		self.api = tweepy.API(auth)
+
+
+def parse_args(args):
+
+
+	output_file = sys.arg[1]
+	search_term = sys.arg[2]
+'''
 # Open config file, which contains API info 
 with open("conf/settings.json") as json_file:
 	info = json.load(json_file)
@@ -18,7 +54,7 @@ auth = tweepy.OAuthHandler(API_key, API_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
-
+'''
 file = codecs.open("results_BrieLarson3.txt", "w", "utf-8")
 #file = codecs.open("output3.txt", "w", "utf-8")
 
@@ -45,6 +81,27 @@ for tweet in queried_tweets:
 '''
 file.write("\n\n\nSUMMARY OF TWEETS\n\n\n")
 file.write("Number of tweets: %d\n\n" % tweet_total)
+
+
+
+
+if __name__=="__main__":
+
+	parse_args(sys.argv)
+
+	myAPI = tweepy_api()
+	myAPI.setup_oath()
+	api = myAPI.api
+
+
+
+
+
+
+
+
+
+
 '''
 file.write("First tweet",)
 file.write(queried_tweets[0].created_at)
