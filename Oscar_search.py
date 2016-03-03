@@ -5,6 +5,7 @@ import tweepy	# for streaming tweets
 import codecs	# for outputting ascii to .txt file properly
 import json	# for parsing json
 import sys,os
+import csv
 
 class Tweepy_api:
 
@@ -50,13 +51,26 @@ class Query:
 
 
 	def output_to_file(self,outfile):
-		print "Outputting to file..."
+#		print "Outputting to file..."
+		print "Number of tweets: %d" % len(self.queried_tweets)
+		outfile.write("created_at|text|retweeted\n")
 		for tweet in self.queried_tweets:
 
 			outfile.write(str(tweet.created_at))
-			outfile.write("  |  ")
-			outfile.write(tweet.text)
-			outfile.write("  |  ")
+			outfile.write("|")
+			outfile.write(tweet.text.replace("|",";"))
+			outfile.write("|")
+			outfile.write(str(tweet.retweeted))
+			outfile.write("\n")
+
+
+	def output_to_csv(self,csvfile):
+		
+		csv_tweets = [[tweet.id_str.encode("utf-8"), str(tweet.created_at).encode("utf-8"), tweet.text.encode("utf-8"), str(tweet.retweeted).encode("utf-8")] for tweet in self.queried_tweets]
+
+		writer = csv.writer(csvfile)
+		writer.writerow(["id","created_at","text","retweeted"])
+		writer.writerows(csv_tweets)
 
 if __name__=="__main__":
 
@@ -73,10 +87,18 @@ if __name__=="__main__":
 	myAPI.setup_oauth()
 	api = myAPI.api
 
+	since = '2016-02-24'
+	until = '2016-02-29'
+
 	print "Creating Query object..."
 	myQuery = Query(api)
-	myQuery.search_tweets(search_term,'2016-02-24','2016-02-29')
+	myQuery.search_tweets(search_term,since,until)
+
+	print "Search term: %s, Dates: %s to %s, File: %s" % (search_term,since,until,output_file)
+
 	myQuery.output_to_file(file)
+#	myQuery.output_to_csv(file)
+	file.close()
 
 	sys.exit()
 
