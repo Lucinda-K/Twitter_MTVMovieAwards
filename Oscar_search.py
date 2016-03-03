@@ -19,24 +19,30 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
 
-file = codecs.open("results_BrieLarson.txt", "w", "utf-8")
+file = codecs.open("results_BrieLarson3.txt", "w", "utf-8")
 #file = codecs.open("output3.txt", "w", "utf-8")
 
 tweet_total = 0
 first_tweet_time = ""
 last_tweet_time = ""
+queried_tweets = []
 
+keyword = "\"Brie Larson\""
 
-keyword = "Brie Larson"
-
-
-
-queried_tweets = api.search(q = keyword, count = 100)
+for tweet in tweepy.Cursor(api.search,q=keyword, since="2016-02-25",until="2016-02-28",count=100,lang='en').items():
+	queried_tweets.append(tweet)
+	file.write(str(tweet.created_at))
+	file.write('-->')
+	file.write(tweet.text)
+	file.write('\n')
+'''
+queried_tweets = api.search(q = keyword, lang ='en')
+'''
 tweet_total = len(queried_tweets)
-
+'''
 for tweet in queried_tweets:
 	file.write(tweet)
-
+'''
 file.write("\n\n\nSUMMARY OF TWEETS\n\n\n")
 file.write("Number of tweets: %d\n\n" % tweet_total)
 '''
@@ -45,11 +51,11 @@ file.write(queried_tweets[0].created_at)
 file.write("Last tweet",)
 file.write(queried_tweets[tweet_total-1].created_at)
 '''
-
+'''
 for tweet in queried_tweets:
 	file.write(tweet.text)
 	file.write("\n")
-
+'''
 '''
 # This uses a streaming API, as opposed to a search API, since the purpose is to collect real-time tweets.
 
