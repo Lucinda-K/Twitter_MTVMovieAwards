@@ -45,7 +45,7 @@ class Query:
 
 		# create keywords string
 		keyword_str = "\"" + str(keywords) + "\""
-		for tweet in tweepy.Cursor(api.search,q=keyword_str, since=since_date, until=until_date, count=100, lang='en').items(100):
+		for tweet in tweepy.Cursor(api.search,q=keyword_str, since=since_date, until=until_date, count=100, lang='en').items():
 
 			self.queried_tweets.append(tweet)
 
@@ -53,9 +53,13 @@ class Query:
 	def output_to_file(self,outfile):
 #		print "Outputting to file..."
 		print "Number of tweets: %d" % len(self.queried_tweets)
-		outfile.write("created_at|text|retweeted\n")
+		outfile.write("id_str|created_at|text|retweeted\n")
+
+		print queried_tweets[0]
 		for tweet in self.queried_tweets:
 
+			outfile.write(tweet.id_str)
+			outfile.write("|")
 			outfile.write(str(tweet.created_at))
 			outfile.write("|")
 			outfile.write(tweet.text.replace("|",";"))
