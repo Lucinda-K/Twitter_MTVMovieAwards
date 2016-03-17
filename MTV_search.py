@@ -42,13 +42,19 @@ class Query:
 		self.queried_tweets = []
 
 	def search_tweets(self,keywords,since_date,until_date):
+#	def search_tweets(self,keywords):
 
+		tweet_count = 0
 		# create keywords string
 		keyword_str = "\"" + str(keywords) + "\""
-		for tweet in tweepy.Cursor(api.search,q=keyword_str, count=100, lang='en').items():
+		for tweet in tweepy.Cursor(api.search,q=keyword_str, since=since_date, until=until_date,count=100, lang='en').items():
 
 			self.queried_tweets.append(tweet)
-
+			tweet_count+=1
+			if tweet_count%100 == 0:
+				print "Tweet %i: %s" % (tweet_count, tweet.created_at)
+#			print tweet.text
+		print "Found %i tweets" % len(self.queried_tweets)
 
 	def output_to_file(self,outfile):
 #		print "Outputting to file..."
@@ -76,13 +82,21 @@ class Query:
 		writer.writerow(["id","created_at","text","retweeted"])
 		writer.writerows(csv_tweets)
 
+	def on_error(self, status_code):
+	# deals with rate limits, disconnects stream
+		if status_code == 420:
+			file.write("Rate limit exceeded")
+			return False
+
 if __name__=="__main__":
 
-	if len(sys.argv) != 3:
-		sys.exit('Usage: python program.py out_file search_term')
+	if len(sys.argv) != 5:
+		sys.exit('Usage: python program.py out_file search_term since until --> Date format:yyyy-mm-dd')
 
 	output_file = str(sys.argv[1])
 	search_term = str(sys.argv[2])
+	since = str(sys.argv[3])
+	until = str(sys.argv[4])
 
 	file = codecs.open(output_file, "w", "utf-8")
 
@@ -91,12 +105,10 @@ if __name__=="__main__":
 	myAPI.setup_oauth()
 	api = myAPI.api
 
-	since = '2016-02-24'
-	until = '2016-02-29'
-
 	print "Creating Query object..."
 	myQuery = Query(api)
 	myQuery.search_tweets(search_term,since,until)
+#	myQuery.search_tweets(search_term)
 
 	print "Search term: %s, Dates: %s to %s, File: %s" % (search_term,since,until,output_file)
 
