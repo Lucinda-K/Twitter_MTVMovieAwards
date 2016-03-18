@@ -44,10 +44,21 @@ class Query:
 	def search_tweets(self,keywords,since_date,until_date):
 #	def search_tweets(self,keywords):
 
+<<<<<<< HEAD
 		tweet_count = 0
 		# create keywords string
 		keyword_str = "\"" + str(keywords) + "\""
 		for tweet in tweepy.Cursor(api.search,q=keyword_str, since=since_date, until=until_date,count=100, lang='en').items():
+=======
+
+		print keywords
+		keywords = keywords.replace("_"," ")
+		print keywords
+		# create keywords string
+		keyword_str = "\"" + str(keywords) + "\""
+		print keyword_str
+		for tweet in tweepy.Cursor(api.search,q=keyword_str, count=100, lang='en').items():
+>>>>>>> 8dc2334e86bde940524645721b30b19c6b788b96
 
 			self.queried_tweets.append(tweet)
 			tweet_count+=1
