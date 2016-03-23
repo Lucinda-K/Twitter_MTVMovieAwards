@@ -33,38 +33,42 @@ class Tweepy_api:
 		auth = tweepy.OAuthHandler(self.api_key, self.api_secret)
 		auth.set_access_token(self.access_token, self.access_token_secret)
 
-		self.api = tweepy.API(auth)
+		self.api = tweepy.API(auth, retry_count=3, retry_delay=5, retry_errors=set([401,404,500,503]), wait_on_rate_limit=True)
 
+
+	def on_error(self, status_code):
+	# deals with rate limits, disconnects stream
+		if status_code == 420:
+			print "Rate limit exceeded"
+			return False
 
 class Query:
 
 	def __init__(self,api):
 		self.queried_tweets = []
+		self.api = api
 
-	def search_tweets(self,keywords,since_date,until_date):
+	def search_tweets(self,keywords,since_date,until_date,outfile):
 #	def search_tweets(self,keywords):
 
-<<<<<<< HEAD
 		tweet_count = 0
 		# create keywords string
-		keyword_str = "\"" + str(keywords) + "\""
-		for tweet in tweepy.Cursor(api.search,q=keyword_str, since=since_date, until=until_date,count=100, lang='en').items():
-=======
+		keyword_str = "\"" + str(keywords).replace("_"," ") + "\""
+		print "Search term: %s, Dates: %s to %s" % (keyword_str,since_date,until_date)
 
-		print keywords
-		keywords = keywords.replace("_"," ")
-		print keywords
-		# create keywords string
-		keyword_str = "\"" + str(keywords) + "\""
-		print keyword_str
 		for tweet in tweepy.Cursor(api.search,q=keyword_str, count=100, lang='en').items():
->>>>>>> 8dc2334e86bde940524645721b30b19c6b788b96
-
+			#print tweet
+			json_str = json.dumps(tweet._json)
+			#print json_str
+			#json_str = json.dumps(tweet)
+			outfile.write(str(json_str))
+			outfile.write("\n")
 			self.queried_tweets.append(tweet)
 			tweet_count+=1
 			if tweet_count%100 == 0:
 				print "Tweet %i: %s" % (tweet_count, tweet.created_at)
-#			print tweet.text
+
+		
 		print "Found %i tweets" % len(self.queried_tweets)
 
 	def output_to_file(self,outfile):
@@ -72,7 +76,6 @@ class Query:
 		print "Number of tweets: %d" % len(self.queried_tweets)
 		outfile.write("id_str|created_at|text|retweeted\n")
 
-		print queried_tweets[0]
 		for tweet in self.queried_tweets:
 
 			outfile.write(tweet.id_str)
@@ -109,7 +112,7 @@ if __name__=="__main__":
 	since = str(sys.argv[3])
 	until = str(sys.argv[4])
 
-	file = codecs.open(output_file, "w", "utf-8")
+	file = codecs.open(output_file, "w", "utf8")
 
 	print "Creating api object..."
 	myAPI = Tweepy_api()
@@ -118,12 +121,12 @@ if __name__=="__main__":
 
 	print "Creating Query object..."
 	myQuery = Query(api)
-	myQuery.search_tweets(search_term,since,until)
+	myQuery.search_tweets(search_term,since,until,file)
 #	myQuery.search_tweets(search_term)
 
-	print "Search term: %s, Dates: %s to %s, File: %s" % (search_term,since,until,output_file)
+#	print "Search term: %s, Dates: %s to %s, File: %s" % (search_term,since,until,output_file)
 
-	myQuery.output_to_file(file)
+	#myQuery.output_to_file(file)
 #	myQuery.output_to_csv(file)
 	file.close()
 
