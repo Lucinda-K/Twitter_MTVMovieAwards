@@ -6,11 +6,14 @@ import codecs	# for outputting ascii to .txt file properly
 import json	# for parsing json
 import sys,os
 import csv
+import time
 
 class Tweepy_api:
 
 	def __init__(self):
 
+		self.api_array = ["lk","ec","ad"]
+		self.api_user = 0
 		self.api_key = ""
 		self.api_secret = ""
 		self.access_token = ""
@@ -23,10 +26,10 @@ class Tweepy_api:
 		with open("conf/settings.json") as json_file:
 			info = json.load(json_file)
 		# load info from config dictionary
-		self.api_key = info["lk"]["api_key"]
-		self.api_secret = info["lk"]["api_secret"]
-		self.access_token = info["lk"]["access_token"]
-		self.access_token_secret = info["lk"]["access_token_secret"]
+		self.api_key = info[self.api_array[self.api_user]]["api_key"]
+		self.api_secret = info[self.api_array[self.api_user]]["api_secret"]
+		self.access_token = info[self.api_array[self.api_user]]["access_token"]
+		self.access_token_secret = info[self.api_array[self.api_user]]["access_token_secret"]
 	
 	def setup_oauth(self):
 		self.get_credentials()
@@ -41,22 +44,29 @@ class Tweepy_api:
 		if status_code == 420:
 			print "Rate limit exceeded"
 			return False
+	
+	def switch_api(self):
+		if self.api_user < 2:
+			self.api_user+=1
+		if self.api_user == 2:
+			self.api_user = 0		
 
 class Query:
 
-	def __init__(self,api):
+	def __init__(self,api,api_obj):
 		self.queried_tweets = []
 		self.api = api
+		self.API_obj = api_obj
 
-	def print_request_limit(self):
+	def get_request_limit(self):
 		data = self.api.rate_limit_status()
 		requests_remaining = data['resources']['search']['/search/tweets']['remaining']
-		print "Requests remaining: %i" % requests_remaining
+		return requests_remaining
 
 	def search_tweets(self,keywords,since_date,until_date):
-#	def search_tweets(self,keywords):
 
-		self.print_request_limit()
+		limit = self.get_request_limit()
+		print limit
 		tweet_count = 0
 		keyword_str = keywords.replace(" ","_")
 		keyword_str = keyword_str.strip("\"")
@@ -72,7 +82,6 @@ class Query:
 		for tweet in tweepy.Cursor(api.search,q=keywords, count=100, lang='en',since=since_date,until=until_date).items():
 
 			try:
-
 				#print tweet
 				json_str = json.dumps(tweet._json)
 				#print json_str
@@ -87,11 +96,18 @@ class Query:
 				
 				if tweet_count%1000 == 0:
 					print "Tweet %i: %s" % (tweet_count, tweet.created_at)
-					self.print_request_limit()
+					print "Requests remaining: %i" % self.get_request_limit()
 					
-			except tweepy.TweepError as e:
-				print("Error" + str(e))
-				break
+			except Exception as e:
+				print e.message[0]['code']
+				print e.args[0][0]['code']
+				#if status_code == 429:
+					#print e.response.status
+				if "limit" in str(e.message) or "exceeded" in str(e.message):
+					print "going to sleep for 15 minutes, current counter:", counter, time.time()
+					time.sleep(15 * 60)
+				API_obj.switch_api()
+				print "switching api user!!"
 
 		
 		print "Found %i tweets" % len(self.queried_tweets)
@@ -131,9 +147,6 @@ class Query:
 
 if __name__=="__main__":
 
-#	if len(sys.argv) != 5:
-#		sys.exit('Usage: python program.py out_file search_term since until --> Date format:yyyy-mm-dd')
-
 	if len(sys.argv) != 4:
 		sys.exit('Usage: python program.py input_file since_date until_date --> Date format: yyyy-mm-dd')
 	# GET INPUT FILE INFO
@@ -162,11 +175,13 @@ if __name__=="__main__":
 	myAPI = Tweepy_api()
 	myAPI.setup_oauth()
 	api = myAPI.api
+	api_user = myAPI.api_user
+	print "API User: ", api_user
 
 	print "Creating Query object..."
 
 	for keyword in keywords:
-		myQuery = Query(api)
+		myQuery = Query(api,myAPI)
 		myQuery.search_tweets(keyword,since,until)
 #	myQuery.search_tweets(search_term)
 
