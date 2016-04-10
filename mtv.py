@@ -11,12 +11,8 @@ consumer_key = "V6SvjGRDb9cx9xjUYbk7cdWiv"
 consumer_secret = "mbSTWuL7rxteJ8UFm3ygODqVfBPmKAu1vwXQoEVX0Q8qAva3yu"
 access_key = "2991534147-2GZdjJypRYLHlOlYe8oP0HIDLX8zqqdVtFvl0Y0"
 access_secret = "p43WYLmYfmt89uz9ivXZm2GIXxWOnicdabGLrsoPBRRYd"
-'''
-		"api_key":"V6SvjGRDb9cx9xjUYbk7cdWiv",
-		"api_secret":"mbSTWuL7rxteJ8UFm3ygODqVfBPmKAu1vwXQoEVX0Q8qAva3yu",
-		"access_token":"2991534147-2GZdjJypRYLHlOlYe8oP0HIDLX8zqqdVtFvl0Y0",
-		"access_token_secret":"p43WYLmYfmt89uz9ivXZm2GIXxWOnicdabGLrsoPBRRYd"
-'''
+
+
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_key, access_secret)
 api = tweepy.API(auth)
@@ -48,15 +44,16 @@ class Query:
 
         out_file = codecs.open(outfile_str, "a", "utf8")
 
-        #cursor = tweepy.Cursor(api.search, q=, count=100, lang='en', since=since_date, until=until_date).items():
         cursor = tweepy.Cursor(api.search, q=keyword, count=100, lang='en', since=since_date, until=until_date, include_entities=True).items()
         while True:
             try:
                 tweet = cursor.next()
                 self.queried_tweets += 1
                 try:
-                    data_to_write = str(tweet.id_str) + '|' + str(tweet.created_at) + '|' + tweet.text.replace("|",";") + '|' + str(tweet.retweeted) + "\n"
-                    out_file.write(data_to_write)
+				json_str = json.dumps(tweet._json)
+				out_file.write(str(json_str))
+				out_file.write("\n")
+				
                 except Exception as e:
                     print 'exception is writing:', e.message
                     pass
@@ -76,11 +73,10 @@ class Query:
 
 
 
-
 if __name__=="__main__":
 
-    since = '2016-03-27'
-    until = '2016-04-03'
+    since = '2016-04-03'
+    until = '2016-04-09'
 
     keywords = ['"Star Wars: The Force Awakens" OR "Star Wars Episode VII" OR "Star Wars: Episode VII"']
 
