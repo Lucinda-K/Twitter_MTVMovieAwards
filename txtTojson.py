@@ -57,15 +57,19 @@ if __name__=="__main__":
 		tweet = {}
 		# Add to dictionary
 		values = line.split("|")
-		tweet['id'] = values[0]
-		tweet['created_at'] = values[1]
-		tweet['text'] = values[2]
-		#print tweet
-		# dump as json and output
-		json.dump(tweet,file)
-		file.write("\n")
-		# clear dictionary for next tweet
-		tweet.clear()
+		#print values
+		if values[1]!='False':
+		# not a nulle tweet
+			tweet['id'] = values[0]
+			tweet['created_at'] = values[1]
+			tweet['text'] = values[2]
+			#print tweet
+			# dump as json and output
+			json.dump(tweet,file)
+			file.write("\n")
+			# clear dictionary for next tweet
+			tweet.clear()
+		
 '''
 		json = json.dumps(tweet.decode('utf8'))
 		file.write(json)
