@@ -1,0 +1,10 @@
+Number of tweets: 7487
+Average polarity: 0.130253
+Number of tweets: 43894
+Average polarity: 0.093914
+Number of tweets: 15000
+Average polarity: 0.091327
+Number of tweets: 15000
+Average polarity: 0.108249
+Number of tweets: 5306
+Average polarity: 0.104027
