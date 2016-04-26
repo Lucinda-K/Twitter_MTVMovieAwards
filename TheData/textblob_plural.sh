@@ -1,6 +1,12 @@
 #!/bin/bash
 
-for file in ./Movie_of_Year/Avengers/*
+let count=0
+
+for file in ./$1/*
 do
-	python textblob_practice.py "$file" >> creed.txt
+	data=$(python calculate.py "$file")
+	echo $data
 done
+
+exit 0
+
