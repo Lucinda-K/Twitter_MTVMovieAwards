@@ -1,6 +1,6 @@
 import sys
 import json
-
+# This program outputs the count of the number of tweets in a json file!
 
 if __name__=="__main__":
 		

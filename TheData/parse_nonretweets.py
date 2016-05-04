@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 if __name__=="__main__":
 	tot_count = 0
 	tweet_count = []

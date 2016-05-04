@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# this program outputs the count and average polarity of the tweets from a data file that are NOT retweets. 
+
 
 import tweepy
 import json

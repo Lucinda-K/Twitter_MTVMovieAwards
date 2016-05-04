@@ -6,11 +6,12 @@ import csv
 import time
 
 
-
-consumer_key = "V6SvjGRDb9cx9xjUYbk7cdWiv"
-consumer_secret = "mbSTWuL7rxteJ8UFm3ygODqVfBPmKAu1vwXQoEVX0Q8qAva3yu"
-access_key = "2991534147-2GZdjJypRYLHlOlYe8oP0HIDLX8zqqdVtFvl0Y0"
-access_secret = "p43WYLmYfmt89uz9ivXZm2GIXxWOnicdabGLrsoPBRRYd"
+with open("../Misc/conf/settings.json") as json_file:
+	info = json.load(json_file)
+	consumer_key = info["ec"]["api_key"]
+	consumer_secret = info["ec"]["api_secret"]
+	access_key = info["ec"]["access_token"]
+	access_secret = info["ec"]["access_token_secret"]
 
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
